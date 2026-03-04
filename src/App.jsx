@@ -12,6 +12,10 @@ function App() {
     window.location.href = `${GATEWAY_URL}/oauth2/authorization/keycloak`;
   };
 
+  const logout = () => {
+    window.location.href = `${GATEWAY_URL}/logout`;
+  };
+
   // 2. 리소스 서버 데이터 요청 (Gateway를 경유)
   const fetchData = async () => {
     try {
@@ -28,11 +32,12 @@ function App() {
 
   return (
     <div style={{ padding: "20px" }}>
-      <h1>Gateway Auth Test</h1>
+      <h1>API Gateway Test</h1>
       <button onClick={login} style={{ marginRight: "10px" }}>
         로그인
       </button>
       <button onClick={fetchData}>데이터 가져오기</button>
+      <button onClick={logout}>로그아웃</button>
       <hr />
       <h3>응답 결과:</h3>
       <pre>{data}</pre>
