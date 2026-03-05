@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useState } from "react";
 import "./App.css";
+import api from "./utils/axios";
 
 const GATEWAY_URL = "http://10.117.9.40:8080";
 
@@ -12,8 +13,16 @@ function App() {
     window.location.href = `${GATEWAY_URL}/oauth2/authorization/keycloak`;
   };
 
-  const logout = () => {
-    window.location.href = `${GATEWAY_URL}/logout`;
+  const logout = async () => {
+    try {
+      const response = await api.post("/logout");
+
+      if (response.status === 200 || response.status === 302) {
+        window.localStorage.href = "/";
+      }
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   // 2. 리소스 서버 데이터 요청 (Gateway를 경유)
