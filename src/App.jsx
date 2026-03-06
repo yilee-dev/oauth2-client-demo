@@ -1,55 +1,44 @@
+import React, { useEffect, useState } from "react";
+import { initKeycloak, doLogin, doLogout } from "./utils/keycloak";
+import { useAuthStore } from "./store/authStore";
 import axios from "axios";
-import { useState } from "react";
-import "./App.css";
 import api from "./utils/axios";
 
-const GATEWAY_URL = "http://10.117.9.40:8080";
-
 function App() {
-  const [data, setData] = useState("");
+  const [initialized, setInitialized] = useState(false);
+  const { user, accessToken } = useAuthStore();
 
-  // 1. 로그인 요청 (Gateway의 OAuth2 엔드포인트로 이동)
-  const login = () => {
-    window.location.href = `${GATEWAY_URL}/oauth2/authorization/keycloak`;
-  };
+  useEffect(() => {
+    initKeycloak((auth) => {
+      setInitialized(true);
+    });
+  }, []);
 
-  const logout = async () => {
+  const callApi = async () => {
     try {
-      const response = await api.post("/logout");
-
-      if (response.status === 200 || response.status === 302) {
-        window.localStorage.href = "/";
-      }
-    } catch (error) {
-      console.error(error);
+      const response = await api.get("/api/users");
+      alert(`API 응답: ${JSON.stringify(response.data)}`);
+    } catch (err) {
+      console.error("API 호출 실패:", err);
     }
   };
 
-  // 2. 리소스 서버 데이터 요청 (Gateway를 경유)
-  const fetchData = async () => {
-    try {
-      const response = await axios.get(`${GATEWAY_URL}/api/users`, {
-        withCredentials: true, // ★중요: 이 설정이 있어야 세션 쿠키가 전송됨
-      });
-      console.log(response);
-      setData(JSON.stringify(response.data));
-    } catch (error) {
-      console.error("데이터 호출 실패:", error);
-      setData("데이터를 가져오지 못했습니다. 로그인이 필요할 수 있습니다.");
-    }
-  };
+  if (!initialized) return <div>인증 확인 중...</div>;
 
   return (
     <div style={{ padding: "20px" }}>
-      <h1>API Gateway Test</h1>
-      <button onClick={login} style={{ marginRight: "10px" }}>
-        로그인
-      </button>
-      <button onClick={fetchData}>데이터 가져오기</button>
-      <button onClick={logout}>로그아웃</button>
-      <hr />
-      <h3>응답 결과:</h3>
-      <pre>{data}</pre>
+      <h1>API Gateway 테스트</h1>
+      {!user ? (
+        <button onClick={doLogin}>로그인</button>
+      ) : (
+        <div>
+          <p>반갑습니다, {user.name}님!</p>
+          <button onClick={callApi}>Gateway API 호출</button>
+          <button onClick={doLogout} style={{ marginLeft: "10px" }}>
+            로그아웃
+          </button>
+        </div>
+      )}
     </div>
   );
 }
